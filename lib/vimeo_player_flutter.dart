@@ -1,9 +1,12 @@
 library vimeo_player_flutter;
 
+import 'dart:collection';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:vimeo_player_flutter/web_uri.dart';
 
 ///vimeo player for Flutter apps
 ///Flutter plugin based on the [webview_flutter] plugin
@@ -19,24 +22,130 @@ class VimeoPlayer extends StatelessWidget {
   ///
   ///
   ///
-  const VimeoPlayer({
+  VimeoPlayer({
     Key? key,
     required this.videoId,
   }) : super(key: key);
 
+  final GlobalKey webViewKey = GlobalKey();
+
   @override
   Widget build(BuildContext context) {
-    return WebView(
-      initialUrl: _videoPage(this.videoId),
-      javascriptMode: JavascriptMode.unrestricted,
+    return InAppWebViewExampleScreen(id: videoId);
+  }
+}
+
+class InAppWebViewExampleScreen extends StatefulWidget {
+  final String id;
+
+  const InAppWebViewExampleScreen({Key? key, required this.id})
+      : super(key: key);
+
+  @override
+  _InAppWebViewExampleScreenState createState() =>
+      new _InAppWebViewExampleScreenState();
+}
+
+class _InAppWebViewExampleScreenState extends State<InAppWebViewExampleScreen> {
+  final GlobalKey webViewKey = GlobalKey();
+
+  InAppWebViewController? webViewController;
+
+  /* InAppWebViewSettings settings = InAppWebViewSettings(
+      mediaPlaybackRequiresUserGesture: false,
+      allowsInlineMediaPlayback: true,
+      iframeAllow: "camera; microphone",
+      iframeAllowFullscreen: true
+  );
+*/
+  PullToRefreshController? pullToRefreshController;
+
+  late ContextMenu contextMenu;
+  String url = "";
+  double progress = 0;
+  final urlController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return  InAppWebView(
+      key: webViewKey,
+      initialUrlRequest: URLRequest(url: WebUri(_videoPage(widget.id))),
+      initialUserScripts: UnmodifiableListView<UserScript>([]),
+      //initialSettings: settings,
+      pullToRefreshController: pullToRefreshController,
+      onWebViewCreated: (controller) async {
+        webViewController = controller;
+        print(await controller.getUrl());
+      },
+      onLoadStart: (controller, url) async {
+        setState(() {
+          this.url = url.toString();
+          urlController.text = this.url;
+        });
+      },
+      /*onPermissionRequest: (controller, request) async {
+                    return PermissionResponse(
+                        resources: request.resources,
+                        action: PermissionResponseAction.GRANT);
+                  },*/
+      shouldOverrideUrlLoading: (controller, navigationAction) async {
+        var uri = navigationAction.request.url!;
+
+        if (!["http", "https", "file", "chrome", "data", "javascript", "about"]
+        .contains(uri.scheme)) {
+          /*if (await canLaunchUrl(uri)) {
+                        // Launch the App
+                        await launchUrl(
+                          uri,
+                        );
+                        // and cancel the request
+                        return NavigationActionPolicy.CANCEL;
+                      }*/
+        }
+
+        return NavigationActionPolicy.ALLOW;
+      },
+      onLoadStop: (controller, url) async {
+        pullToRefreshController?.endRefreshing();
+        setState(() {
+          this.url = url.toString();
+          urlController.text = this.url;
+        });
+      },
+      /*onReceivedError: (controller, request, error) {
+                    pullToRefreshController?.endRefreshing();
+                  },*/
+      onProgressChanged: (controller, progress) {
+        /*if (progress == 100) {
+          pullToRefreshController?.endRefreshing();
+        }
+        setState(() {
+          this.progress = progress / 100;
+          urlController.text = this.url;
+        });*/
+      },
+      onUpdateVisitedHistory: (controller, url, isReload) {
+        setState(() {
+          this.url = url.toString();
+          urlController.text = this.url;
+        });
+      },
+      onConsoleMessage: (controller, consoleMessage) {
+        print(consoleMessage);
+      },
     );
   }
 
-  ///web page containing iframe of the vimeo video
-  ///
-  ///
-  ///
-  ///
   String _videoPage(String videoId) {
     final html = '''
             <html>
