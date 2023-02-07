@@ -9,11 +9,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Customized Player',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'vimeo_player example'),
+      home: MyHomePage(title: 'Customized Player'),
     );
   }
 }
@@ -28,7 +28,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String videoId = '70591644';
+  String videoId = '796729561';
 
   @override
   Widget build(BuildContext context) {
