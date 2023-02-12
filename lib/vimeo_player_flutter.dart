@@ -1,27 +1,16 @@
-library vimeo_player_flutter;
-
-import 'dart:collection';
 import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:vimeo_player_flutter/web_uri.dart';
 
 ///vimeo player for Flutter apps
 ///Flutter plugin based on the [webview_flutter] plugin
 ///[videoId] is the only required field to use this plugin
-///
-///
-///
-///
+
 class VimeoPlayer extends StatelessWidget {
   final String videoId;
-
-  ///constructor
-  ///
-  ///
-  ///
   VimeoPlayer({
     Key? key,
     required this.videoId,
@@ -51,20 +40,6 @@ class _InAppWebViewExampleScreenState extends State<InAppWebViewExampleScreen> {
 
   InAppWebViewController? webViewController;
 
-  /* InAppWebViewSettings settings = InAppWebViewSettings(
-      mediaPlaybackRequiresUserGesture: false,
-      allowsInlineMediaPlayback: true,
-      iframeAllow: "camera; microphone",
-      iframeAllowFullscreen: true
-  );
-*/
-  PullToRefreshController? pullToRefreshController;
-
-  late ContextMenu contextMenu;
-  String url = "";
-  double progress = 0;
-  final urlController = TextEditingController();
-
   @override
   void initState() {
     super.initState();
@@ -80,24 +55,22 @@ class _InAppWebViewExampleScreenState extends State<InAppWebViewExampleScreen> {
     return  InAppWebView(
       key: webViewKey,
       initialUrlRequest: URLRequest(url: WebUri(_videoPage(widget.id))),
-      initialUserScripts: UnmodifiableListView<UserScript>([]),
-      //initialSettings: settings,
-      pullToRefreshController: pullToRefreshController,
+      initialOptions: InAppWebViewGroupOptions(
+          crossPlatform: InAppWebViewOptions(
+            mediaPlaybackRequiresUserGesture: false,
+          ),
+          android: AndroidInAppWebViewOptions(
+              useHybridComposition: true,
+          ),
+          ios: IOSInAppWebViewOptions(
+            allowsInlineMediaPlayback: true,
+          )
+      ),
       onWebViewCreated: (controller) async {
-        webViewController = controller;
-        print(await controller.getUrl());
+        debugPrint(await controller.getUrl().toString());
       },
       onLoadStart: (controller, url) async {
-        setState(() {
-          this.url = url.toString();
-          urlController.text = this.url;
-        });
       },
-      /*onPermissionRequest: (controller, request) async {
-                    return PermissionResponse(
-                        resources: request.resources,
-                        action: PermissionResponseAction.GRANT);
-                  },*/
       shouldOverrideUrlLoading: (controller, navigationAction) async {
         var uri = navigationAction.request.url!;
 
@@ -116,32 +89,26 @@ class _InAppWebViewExampleScreenState extends State<InAppWebViewExampleScreen> {
         return NavigationActionPolicy.ALLOW;
       },
       onLoadStop: (controller, url) async {
-        pullToRefreshController?.endRefreshing();
-        setState(() {
-          this.url = url.toString();
-          urlController.text = this.url;
-        });
       },
-      /*onReceivedError: (controller, request, error) {
-                    pullToRefreshController?.endRefreshing();
-                  },*/
       onProgressChanged: (controller, progress) {
-        /*if (progress == 100) {
-          pullToRefreshController?.endRefreshing();
-        }
-        setState(() {
-          this.progress = progress / 100;
-          urlController.text = this.url;
-        });*/
       },
       onUpdateVisitedHistory: (controller, url, isReload) {
-        setState(() {
-          this.url = url.toString();
-          urlController.text = this.url;
-        });
       },
       onConsoleMessage: (controller, consoleMessage) {
         print(consoleMessage);
+      },
+      onEnterFullscreen: (controller) async {
+        debugPrint(">>>>>>>>>>>>>>>>>>>>>>onEnterFullscreen>>>>>>>>>>>>>>>>>");
+        await SystemChrome.setPreferredOrientations([
+          DeviceOrientation.landscapeRight,
+          DeviceOrientation.landscapeLeft,
+        ]);
+      },
+      onExitFullscreen: (controller) async {
+        debugPrint(">>>>>>>>>>>>>>>>>>>>>>onExitFullscreen>>>>>>>>>>>>>>>>>");
+        await SystemChrome.setPreferredOrientations([
+          DeviceOrientation.portraitUp,
+        ]);
       },
     );
   }
@@ -162,10 +129,8 @@ class _InAppWebViewExampleScreenState extends State<InAppWebViewExampleScreen> {
                 img-src * data: blob: android-webview-video-poster:; style-src * 'unsafe-inline';">
              </head>
              <body>
-                <iframe 
-                src="https://player.vimeo.com/video/$videoId?loop=0&autoplay=0" 
-                width="100%" height="100%" frameborder="0" allow="fullscreen" 
-                allowfullscreen></iframe>
+             <div style="padding:56.25% 0 0 0;position:relative;"><iframe src="$videoId?autoplay=1" frameborder="0" allow="autoplay fullscreen picture-in-picture" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;"></iframe></div><script src="https://player.vimeo.com/api/player.js"></script>
+                
              </body>
             </html>
             ''';
