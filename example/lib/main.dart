@@ -40,7 +40,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           children: [
             Container(
-              height: 200,
+              height: 250,
               child: VimeoPlayer(
                videoId: videoId,
               ),
