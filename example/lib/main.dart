@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:vimeo_player_flutter/vimeo_player_flutter.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  SystemChrome.setEnabledSystemUIOverlays(<SystemUiOverlay>[]);
   runApp(MyApp());
+
 }
 
 class MyApp extends StatelessWidget {
@@ -10,6 +15,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Customized Player',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -32,21 +38,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
+    return SafeArea(
+      /*appBar: AppBar(
         title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          children: [
-            Container(
-              height: 250,
-              child: VimeoPlayer(
-               videoId: videoId,
-              ),
-            ),
-          ],
-        ),
+      ),*/
+      child: VimeoPlayer(
+       videoId: videoId,
       ),
       // This trailing comma makes auto-formatting nicer for build methods.
     );

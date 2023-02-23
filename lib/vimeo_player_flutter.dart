@@ -47,6 +47,8 @@ class _InAppWebViewExampleScreenState extends State<InAppWebViewExampleScreen> {
 
   @override
   void dispose() {
+    webViewController!.clearCache();
+    webViewController!.android.clearHistory();
     super.dispose();
   }
 
@@ -57,16 +59,22 @@ class _InAppWebViewExampleScreenState extends State<InAppWebViewExampleScreen> {
       initialUrlRequest: URLRequest(url: WebUri(_videoPage(widget.id))),
       initialOptions: InAppWebViewGroupOptions(
           crossPlatform: InAppWebViewOptions(
+            //javaScriptCanOpenWindowsAutomatically: true,
+            //javaScriptEnabled: true,
             mediaPlaybackRequiresUserGesture: false,
+            //clearCache: true
           ),
           android: AndroidInAppWebViewOptions(
               useHybridComposition: true,
+            //clearSessionCache: true
           ),
           ios: IOSInAppWebViewOptions(
             allowsInlineMediaPlayback: true,
           )
       ),
       onWebViewCreated: (controller) async {
+       // webViewController = controller;
+
         debugPrint(await controller.getUrl().toString());
       },
       onLoadStart: (controller, url) async {
@@ -94,8 +102,15 @@ class _InAppWebViewExampleScreenState extends State<InAppWebViewExampleScreen> {
       },
       onUpdateVisitedHistory: (controller, url, isReload) {
       },
-      onConsoleMessage: (controller, consoleMessage) {
-        print(consoleMessage);
+      onConsoleMessage: (controller, consoleMessage) async {
+        print("consoleMessage:: "+consoleMessage.toString());
+        if(consoleMessage.toString().contains("fullscreen")){
+
+          await SystemChrome.setPreferredOrientations([
+            DeviceOrientation.landscapeRight,
+            DeviceOrientation.landscapeLeft,
+          ]);
+        }
       },
       onEnterFullscreen: (controller) async {
         debugPrint(">>>>>>>>>>>>>>>>>>>>>>onEnterFullscreen>>>>>>>>>>>>>>>>>");
@@ -119,7 +134,7 @@ class _InAppWebViewExampleScreenState extends State<InAppWebViewExampleScreen> {
               <head>
                 <style>
                   body {
-                   background-color: lightgray;
+                   background-color: black;
                    margin: 0px;
                    }
                 </style>
@@ -129,9 +144,7 @@ class _InAppWebViewExampleScreenState extends State<InAppWebViewExampleScreen> {
                 img-src * data: blob: android-webview-video-poster:; style-src * 'unsafe-inline';">
              </head>
              <body>
-             <div style="padding:56.25% 0 0 0;position:relative;"><iframe src="$videoId?autoplay=1" frameborder="0" allow="autoplay fullscreen picture-in-picture" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;"></iframe></div><script src="https://player.vimeo.com/api/player.js"></script>
-                
-             </body>
+             <iframe src="$videoId?autoplay=true&muted=false&loop=true&autopause=false&controls=true&pip=true&playsinline=true" width="100%" height="100%" frameborder=“0”  allowfullscreen  allow="autoplay fullscreen picture-in-picture"></iframe></body>
             </html>
             ''';
     final String contentBase64 =
