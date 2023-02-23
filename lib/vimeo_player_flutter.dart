@@ -144,7 +144,7 @@ class _InAppWebViewExampleScreenState extends State<InAppWebViewExampleScreen> {
                 img-src * data: blob: android-webview-video-poster:; style-src * 'unsafe-inline';">
              </head>
              <body>
-             <iframe src="$videoId?autoplay=true&muted=false&loop=true&autopause=false&controls=true&pip=true&playsinline=true" width="100%" height="100%" frameborder=“0”  allowfullscreen  allow="autoplay fullscreen picture-in-picture"></iframe></body>
+             <iframe src="$videoId?autoplay=true&muted=false&loop=true&autopause=false&controls=true&pip=true&playsinline=true&title=false" width="100%" height="100%" frameborder=“0”  allowfullscreen webkitallowfullscreen mozallowfullscreen  allow="autoplay fullscreen picture-in-picture"></iframe></body>
             </html>
             ''';
     final String contentBase64 =
